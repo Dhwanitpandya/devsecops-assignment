@@ -1,0 +1,294 @@
+Name: Dhwanit Pandya
+
+Task-1: Deploy a simple Nginx web server in a Kubernetes cluster.
+ 
+Result:
+ 
+ 
+ 
+
+Task 2: Create a Kubernetes Deployment for a multi-replica Nginx
+Yaml File:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+Result:
+ 
+ 
+
+Task 3: Expose the Nginx Deployment using a Kubernetes Service.
+Yaml file:
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  externalTrafficPolicy: Local
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:    
+    app: nginx
+  type: NodePort
+ 
+ 
+Task 4: Create a Config-Map for storing configuration data and mount it into a Pod.
+Config.yaml:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-configmap
+data:
+  app_config.properties: |
+    key1=value1
+    key2=value2
+    key3=value3
+pod.yaml:
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+    - name: mycontainer
+      image: ubuntu
+      volumeMounts:
+      - name: config-volume
+        mountPath: /etc/config
+  volumes:
+    - name: config-volume
+      configMap:
+        name: my-configmap
+Task 5: Create a Docker file to run a WordPress application with a linked MySQL container.
+Docker-compose.yml
+version: "3"
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: your_mysql_root_password
+      MYSQL_DATABASE: your_mysql_database_name
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: your_mysql_root_password
+      WORDPRESS_DB_NAME: your_mysql_database_name
+    volumes:
+      - ./wordpress:/var/www/html
+Result:
+ 
+ 
+
+Task 6 : Dockerize a Node.js application and expose it on port 3000
+Dockerfile
+FROM node:latest
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+COPY . .
+ENV PORT=3000
+CMD [ 'npm', 'app.js' ]
+Result:
+Node.js app not reachable
+ 
+Task 7: Create a Dockerfile for a Python web application using Flask. The application should expose port 5000, and when accessed, it should display "Hello, Docker!" in the browser.
+Dockerfile:
+FROM python:3.9.12-buster
+WORKDIR /flask-docker
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["python", "app.py"]	
+App.py:
+from flask import Flask
+
+app = Flask(__name__)
+@app.route('/')
+def hello():
+    return 'Hello,Docker!'
+if __name__ == '__main__':
+    app.run(debug=True)
+docker run -d -p 5000:5000 7176fe81a234
+result:
+  
+Error:
+ 
+
+
+
+Task 8: Create a Terraform script to provision an AWS EC2 instance with an associated security group allowing incoming traffic on port 22 for SSH.
+vpc.tf
+provider "aws" {
+  region     = var.region
+  access_key = var.access_key
+  secret_key = var.secret_key
+}
+resource "aws_vpc" "vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "vpc"
+  }
+}
+
+resource "aws_subnet" "subnet" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "ap-south-1b"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "subnet"
+  }
+}
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.vpc.id
+
+  tags = {
+    Name = "igw"
+  }
+}
+
+resource "aws_route_table" "route" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name = "route"
+  }
+}
+
+resource "aws_route_table_association" "devrouteassoc" {
+  subnet_id      = aws_subnet.subnet.id
+  route_table_id = aws_route_table.route.id
+}
+
+resource "aws_security_group" "sg" {
+  vpc_id = aws_vpc.vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg"
+  }
+}
+
+Ec2.tf
+provider "aws" {
+  region     = var.region
+  access_key = var.access_key
+  secret_key = var.secret_key
+}
+
+variable "vpc_id" {
+  default = "vpc-0db47fd19fbc32358"
+}
+
+variable "subnet_id" {
+  default = "subnet-02c0ef68f549858a0"
+}
+
+
+resource "aws_instance" "instance" {
+  ami           = "ami-0287a05f0ef0e9d9a"
+  instance_type = "t2.medium"
+
+  subnet_id = var.subnet_id
+
+  tags = {
+    Name = "instance"
+  }
+}
+Task 9 : Write a Terraform script to provision an AWS RDS instance (MySQL)
+#main.tf
+#defining the provider as aws
+provider "aws" {
+    region     = "${var.region}"
+    access_key = "${var.access_key}"
+    secret_key = "${var.secret_key}"
+}
+
+#create a security group for RDS Database Instance
+resource "aws_security_group" "rds_sg" {
+  name = "rds_sg"
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+#create a RDS Database Instance
+resource "aws_db_instance" "myinstance" {
+  engine               = "mysql"
+  identifier           = "myrdsinstance"
+  allocated_storage    =  20
+  engine_version       = "5.7"
+  instance_class       = "db.t2.micro"
+  username             = "myrdsuser"
+  password             = "myrdspassword"
+  parameter_group_name = "default.mysql5.7"
+  vpc_security_group_ids = ["${aws_security_group.rds_sg.id}"]
+  skip_final_snapshot  = true
+  publicly_accessible =  true
+}
+
